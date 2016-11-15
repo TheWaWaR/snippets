@@ -1,0 +1,191 @@
+
+# [Ref]: BNF>> http://savage.net.au/SQL/sql-92.bnf.html#query specification
+# [Ref]: Python parser>> https://github.com/vlasovskikh/funcparserlib/blob/master/funcparserlib/tests/dot.py
+
+
+<query specification>    ::= 
+         SELECT <select list> <table expression>
+
+#### SELECT
+<select list>    ::= 
+       <asterisk>
+     | <derived column> [ { <comma> <derived column> }... ]
+<derived column>   ::=   <value expression> [ <as clause> ]
+<value expression> ::=   <numeric value expression> | <string value expression>
+
+#### FROM
+<table expression> ::=   <from clause> [ <where clause> ]
+<from clause>      ::=   FROM <mqtt topic>
+
+#### WHERE
+<where clause>     ::= WHERE <search condition>
+<search condition> ::= <boolean term> | <search condition> OR <boolean term>
+<boolean term>     ::= 
+       <boolean factor>
+     | <boolean term> AND <boolean factor>
+<boolean factor>  ::=   [ NOT ] <boolean test>
+<boolean test>    ::=   <boolean primary> [ IS [ NOT ] <truth value> ]
+<boolean primary> ::=   <predicate> | <left paren> <search condition> <right paren>
+<predicate>       ::= 
+       <comparison predicate>
+     | <in predicate>
+     | <like predicate>
+     | <null predicate>
+#     | <quantified comparison predicate>
+<numeric value expression>    ::= 
+       <term>
+     | <numeric value expression> <plus sign> <term>
+     | <numeric value expression> <minus sign> <term>
+<term>    ::= 
+       <factor>
+     | <term> <asterisk> <factor>
+     | <term> <solidus> <factor>
+<factor>    ::=   [ <sign> ] <numeric primary>
+<numeric primary>    ::=   <value expression primary> | <numeric value function>
+<value expression primary>    ::= 
+#       <unsigned value specification>
+     | <column reference>
+#     | <set function specification>
+     | <general set function>
+#     | <scalar subquery>
+     | <case expression>
+     | <left paren> <value expression> <right paren>
+     | <cast specification>
+<column reference>  ::=   [ <qualifier> <period> ] <column name>
+<qualifier>         ::=   <mqtt topic> | <correlation name>
+<correlation name>  ::=   <identifier>
+
+<case expression>   ::=   <case abbreviation> | <case specification>
+<case abbreviation> ::= 
+       NULLIF <left paren> <value expression> <comma> <value expression> <right paren>
+     | COALESCE <left paren> <value expression> { <comma> <value expression> }... <right paren>
+<case specification>    ::=   <simple case> | <searched case>
+<simple case>    ::= 
+         CASE <case operand>
+             <simple when clause> ...
+             [ <else clause> ]
+         END
+<searched case>    ::= 
+         CASE 
+         <searched when clause> ...
+         [ <else clause> ]
+         END
+<searched when clause>          ::=   WHEN <search condition> THEN <result>
+<general set function> ::= 
+       <set function type> <left paren> [ <set quantifier> ] <value expression> <right paren>
+<case operand>         ::=   <value expression>
+<simple when clause>   ::=   WHEN <when operand> THEN <result>
+<when operand>         ::=   <value expression>
+<result>               ::=   <result expression> | NULL
+<result expression>    ::=   <value expression>
+<else clause>          ::=   ELSE <result>
+<cast specification>   ::=   CAST <left paren> <cast operand> AS <cast target> <right paren>
+<cast operand>         ::=   <value expression> | NULL
+<cast target>          ::=   <domain name> | <data type>
+<domain name>          ::=   <qualified name>
+<data type>            ::=   DateType
+
+<numeric value function>   ::= <length expression>
+<length expression>        ::= <char length expression> | <octet length expression>
+<string value function>    ::= <character value function>
+<character value function> ::= <character substring function> | <fold>
+#     | <form-of-use conversion>
+#     | <character translation>
+#     | <trim function>
+<character substring function> ::= 
+       SUBSTRING <left paren> <character value expression> FROM <start position> [ FOR <string length> ] <right paren>
+<character value expression>   ::=   <concatenation> | <character factor>
+<fold>                         ::=   { UPPER | LOWER } <left paren> <character value expression> <right paren>
+<sign>                         ::=   <plus sign> | <minus sign>
+<unqualified schema name>      ::=   <identifier>
+
+<string value expression>      ::=   <character value expression>
+
+<comparison predicate>   ::= <row value constructor> <comp op> <row value constructor>
+<row value constructor>  ::= 
+       <row value constructor element>
+     | <left paren> <row value constructor list> <right paren>
+<comp op>    ::= 
+       <equals operator>
+     | <not equals operator>
+     | <less than operator>
+     | <greater than operator>
+     | <less than or equals operator>
+     | <greater than or equals operator>  
+<row value constructor element>    ::= 
+       <value expression>
+     | <null specification>
+     | <default specification>
+
+<concatenation>        ::=   <character value expression> <concatenation operator> <character factor>
+<character factor>     ::=   <character primary> [ <collate clause> ]
+<character primary>    ::=   <value expression primary> | <string value function>
+<collate clause>       ::=   COLLATE <collation name>
+<collation name>       ::=   <qualified name>
+<qualified name>       ::=   [ <schema name> <period> ] <qualified identifier>
+<schema name>          ::=   [ <catalog name> <period> ] <unqualified schema name>
+<catalog name>         ::=   <identifier>
+<qualified identifier> ::=   <identifier>
+<start position>       ::=   <numeric value expression>
+<string length>        ::=   <numeric value expression>
+
+<row value constructor list> ::=   <row value constructor element> [ { <comma> <row value constructor element> } ... ]
+<in predicate>               ::=   <row value constructor> [ NOT ] IN <in predicate value>
+<in predicate value>         ::=  <left paren> <in value list> <right paren>
+<in value list>              ::=   <value expression> { <comma> <value expression> } ...
+<null predicate>             ::=   IS [ NOT ] NULL
+<like predicate>             ::=   <match value> [ NOT ] LIKE <pattern> [ ESCAPE <escape character> ]
+<match value>                ::=   <character value expression>
+<escape character>           ::=   <character value expression>
+<pattern>                    ::=   <character value expression>
+<column name>                ::=   <identifier>
+<identifier>                 ::=   [ <introducer> <character set specification> ] <actual identifier>
+<introducer>                 ::=   <underscore>
+<actual identifier>          ::=   <regular identifier> | <delimited identifier>
+<regular identifier>         ::=   <identifier body>
+<delimited identifier>      ::=   <double quote> <delimited identifier body> <double quote>
+<delimited identifier body> ::=   <delimited identifier part> ...
+<delimited identifier part> ::=   <nondoublequote character> | <doublequote symbol>
+<doublequote symbol>        ::=   <double quote> <double quote>
+<identifier body>           ::=   <identifier start> [ { <underscore> | <identifier part> } ... ]
+<identifier part>           ::=   <identifier start> | <digit>
+
+#### Function
+<char length expression>   ::= CHAR_LENGTH  <left paren> <string value expression> <right paren>
+<octet length expression>  ::= OCTET_LENGTH <left paren> <string value expression> <right paren>
+
+<character set specification>     ::= UTF8
+# <character set name>            ::= UTF8
+<nondoublequote character>        ::=   !! See the syntax rules
+<identifier start>                ::=   !! See the Syntax rules
+<set quantifier>                  ::=   DISTINCT | ALL
+<set function type>               ::=   AVG | MAX | MIN | SUM | COUNT
+<less than operator>              ::=   <
+<greater than operator>           ::=   >
+<greater than or equals operator> ::=   >=
+<less than or equals operator>    ::=   <=
+<equals operator>                 ::=   =
+<not equals operator>             ::=   <>
+<concatenation operator>          ::=   ||
+
+# <simple Latin letter>    ::= <simple Latin upper case letter> | <simple Latin lower case letter>
+#<simple Latin upper case letter>    ::= 
+#     A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z
+#<simple Latin lower case letter>    ::= 
+#     a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z
+<digit>    ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+<mqtt topic>            ::=   VALID-MQTT-TOPIC
+<as clause>             ::=   [ AS ] <column name>
+<truth value>           ::=   TRUE | FALSE | UNKNOWN
+<default specification> ::=   DEFAULT
+<null specification>    ::=   NULL
+<plus sign>             ::=   +
+<minus sign>            ::=   -
+<period>                ::=   .
+<comma>                 ::=   ,
+<asterisk>              ::=   *
+<left paren>            ::=   (
+<right paren>           ::=   )
+<underscore>            ::=   _
+<solidus>               ::=   /
+<double quote>          ::=   \"
